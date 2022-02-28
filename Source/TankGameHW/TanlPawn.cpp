@@ -3,6 +3,10 @@
 
 #include "TanlPawn.h"
 
+#include "DrawDebugHelpers.h"
+#include "Player_Controller.h"
+#include "Kismet/KismetMathLibrary.h"
+
 // Sets default values
 ATanlPawn::ATanlPawn()
 {
@@ -24,6 +28,7 @@ ATanlPawn::ATanlPawn()
 	Camera->SetupAttachment(Arm);
 
 	Camera->bUsePawnControlRotation = false;
+	Arm->SetRelativeRotation (FRotator(-90,0,0));
 	Arm->bInheritPitch = false;
 	Arm->bInheritRoll = false;
 	Arm->bInheritYaw= false;
@@ -36,29 +41,45 @@ void ATanlPawn::Forward(float Value)
 	ForwardScale = Value;
 }
 
-void ATanlPawn::Right(float Value)
+void ATanlPawn::Rotate(float Value)
 {
-	RightScale = Value;
+	RotationScale = Value;
 }
 
 void ATanlPawn::Move()
 {
 	auto Current_location = GetActorLocation();
-	auto FW = GetActorForwardVector() * ForwardScale;
-	auto RW = GetActorRightVector() * RightScale;
+	auto FW = GetActorForwardVector() * ((ForwardScale < 0) ? ForwardScale*0.587f : ForwardScale);
+	SetActorLocation(Current_location + FW * MovementSpeed * GetWorld()->DeltaTimeSeconds);
 
+}
+
+void ATanlPawn::RotateTank()
+{
+	auto Current_Rotation = GetActorRotation();
+	Current_Rotation.Yaw += RotationScale * RotationSpeed * GetWorld()->DeltaTimeSeconds * ((ForwardScale >= 0) ? 1  : -1);
+	SetActorRotation(Current_Rotation);
+}
+
+void ATanlPawn::RotateTower()
+{
+	//if (!PlayerController)
+	//	return;
+	FVector const Mouse_Pos = PlayerController->GetMousePosition();
+	FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(Tank_Tower->GetComponentLocation(), Mouse_Pos);
+	FRotator const Current_Rotation = Tank_Tower->GetComponentRotation();
+	TargetRotation.Pitch = Current_Rotation.Pitch;
+	TargetRotation.Roll = Current_Rotation.Roll;
+	Tank_Tower->SetWorldRotation(FMath::Lerp(Current_Rotation, TargetRotation, Acceleration));
+DrawDebugSphere(GetWorld(),Mouse_Pos, 60,50,  FColor::Red);
 	
-	auto destination = RW+ FW ;
-	destination.Normalize();
-	SetActorLocation(Current_location + destination * MovementSpeed * GetWorld()->DeltaTimeSeconds);
-
 }
 
 // Called when the game starts or when spawned
 void ATanlPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	PlayerController = Cast<APlayer_Controller>(GetController());
 }
 
 // Called every frame
@@ -66,6 +87,8 @@ void ATanlPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	Move();
+	RotateTank();
+	RotateTower();
 
 }
 

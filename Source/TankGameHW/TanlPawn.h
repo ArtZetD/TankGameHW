@@ -8,7 +8,7 @@
 #include "GameFramework/Pawn.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "TanlPawn.generated.h"
-
+class APlayer_Controller;
 UCLASS()
 class TANKGAMEHW_API ATanlPawn : public APawn
 {
@@ -17,38 +17,52 @@ class TANKGAMEHW_API ATanlPawn : public APawn
 public:
 	// Sets default values for this pawn's properties
 	ATanlPawn();
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Collision")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Collision")
 	UBoxComponent* Collision;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Meshes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Meshes")
 	UStaticMeshComponent* Tank_Body;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Meshes")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Meshes")
 	UStaticMeshComponent* Tank_Tower;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	UCameraComponent* Camera;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Camera")
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Camera")
 	USpringArmComponent* Arm;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tank Parametres")
-	float MovementSpeed = 2500;
+	float MovementSpeed = 1500;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tank Parametres")
+	float RotationSpeed = 40;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Tank Parametres")
+	float Acceleration = .5;
+
 
 	void Forward (float Value);
-	void Right (float Value);
+	void Rotate (float Value);
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	float ForwardScale;
-	float RightScale;
+	float RotationScale;
+	
 
 	void Move();
+	void RotateTank();
+	void RotateTower();
+
+	
 
 
-public:	
+public:
+	UPROPERTY()
+	APlayer_Controller* PlayerController;
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 

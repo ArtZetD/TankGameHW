@@ -19,11 +19,21 @@ class TANKGAMEHW_API APlayer_Controller : public APlayerController
 	virtual void SetupInputComponent() override;
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-
+	
+	
 
 	void OnMoveForward(float Value);
-	void OnMoveRight(float Value);
-	
+	void OnRotateRight(float Value);
+
 	UPROPERTY()
 	ATanlPawn* PTankPawn;
+
+
+
+	FVector Mouse_World_Pos;
+public:
+	FVector GetMousePosition()
+	{
+		return Mouse_World_Pos;
+	};
 };
